@@ -4,13 +4,17 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const mongoose = require('mongoose');
+var cors = require('cors');
+
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const req = require('express/lib/request');
-var gameRouter = require('./routes/game');
+var gameApiRouter = require('./routes/gameApi');
+var gameRouter = require('./routes/gameApi');
 
 var app = express();
+app.use(cors());
 
 mongoose.connect('mongodb+srv://admin:auf123@cluster0.zzaup.mongodb.net/pokerclocks?retryWrites=true&w=majority')
     .then(console.log('connected to db!'))
@@ -25,8 +29,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/game',gameRouter);
-
+app.use('/game', gameRouter);
+app.use('/gameApi',gameApiRouter);
+app.get('/test',function(req,res){      
+  res.sendFile(path.join(__dirname,'/socket.html'));
+  });
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
@@ -42,41 +49,5 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
-
-// (async()=>{
-    
-//   const game = new gameModel({
-//     code:"1231SS23",
-//     chipstack: 1500,
-//     levelStructure:[
-//       {
-//         level: 1,
-//         time: 600
-//       },
-//       {
-//         level: 2,
-//         time: 600
-//       }
-//     ],
-//     currentLevel: 1,
-//     currentTime: 33,
-//     blindsStructure:[
-//       {
-//         level: 1,
-//         bigBlind: 20,
-//         smallBlind: 10
-//       },
-//       {
-//         level: 2,
-//         bigBlind: 40,
-//         smallBlind: 20
-//       }
-//     ]
-//   });
-//   await game.save()
-//   })()
-
-
 
 module.exports = app;
