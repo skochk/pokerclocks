@@ -2,7 +2,6 @@ const res = require('express/lib/response');
 let gameModel = require('../models/game.js')
 
 
-
 //add method here check does game CODE exist already 
 function generateCode(){
     let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
@@ -39,6 +38,15 @@ module.exports.updateGameInfo = async(data)=>{
         let updatedGame = await gameModel.findOneAndUpdate(filter,data, {new: true})
         console.log('result controller: ',updatedGame)
         return updatedGame;
+    }catch(err){
+        throw err;
+    }
+}
+
+module.exports.getGame = async(code)=>{
+    try{
+        let gameInfo = await gameModel.findOne({code:code});
+        return gameInfo;
     }catch(err){
         throw err;
     }

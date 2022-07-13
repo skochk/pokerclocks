@@ -7,7 +7,9 @@
 var app = require('../app');
 var debug = require('debug')('backend:server');
 var http = require('http');
-let socketapi = require("../socketApi");
+let io = require('../socket');
+
+
 /**
  * Get port from environment and store in Express.
  */
@@ -15,13 +17,15 @@ let socketapi = require("../socketApi");
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
+
 /**
  * Create HTTP server.
- */
-
+//  */
 var server = http.createServer(app);
-socketapi.io.attach(server);
 
+io.attach(server);
+
+app.set('socketio', io);
 /**
  * Listen on provided port, on all network interfaces.
  */
