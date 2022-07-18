@@ -20,9 +20,9 @@ const gameScheme = new Schema({
     levelStructure: [levelStructureSchema],
     currentLevel: Number,
     currentTime: Number, // in sec's
+    isGameGoing: {type: Boolean, default: false }, // true = game going 
     blindsStructure: [blindsStructureSchema],
-
-
+ 
 });
 
 

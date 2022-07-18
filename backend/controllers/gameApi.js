@@ -20,6 +20,7 @@ module.exports.registerNewGame = async(data)=>{
             levelStructure: data.levelStructure,
             currentLevel: data.currentLevel,
             currentTime: data.currentTime,
+            isGameGoing: data.isGameGoing,
             blindsStructure: data.blindsStructure
         })
         console.log(data)

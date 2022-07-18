@@ -22,10 +22,11 @@ router.post('/test', function(req,res){
         res.send(result)
     })()
         
-})
+});
 
 router.get('/',function(){
     res.send('loaded')
-})
+});
+
 module.exports = router;
  
