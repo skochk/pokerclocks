@@ -28,11 +28,28 @@
       const socket = io("http://localhost:8080", { transports: ["websocket"] });
   
         console.log('connected somewhere');
+        let tempGameID = 'IMULS';
+        // socket.onAny((event, ...args) => {
+        //   console.log("any:",event, args);
+        // });
         
-        document.querySelector('.btntest').addEventListener('click',function(){
-          socket.emit('')
+        document.querySelector('.btntest').addEventListener('click', async function(){
+          socket.emit('joinroom',tempGameID,socket.id)
+
+          // write ui above after creating room
+          socket.on('private message',function(msg){
+            console.log('got private:',msg)
+          })
+          socket.on(tempGameID, function(msg,id){
+            console.log('room',tempGameID,":",msg)
+          })
         })
-    
+
+
+        socket.on('room-msg',msg=>{
+          console.log('roommsg:',msg);
+        })
+        
     </script>
 
 

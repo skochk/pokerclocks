@@ -16,21 +16,31 @@ instrument(io, {
   auth: false
 });
 
-
 io.on( "connection", function( socket ) {
   console.log("socket1: A user connected" );
+  socket.onAny((event, ...args) => {
+    console.log('any:',event, args);
+  });
 
-  socket.on('joinroom',async(room)=>{
-    console.log(room)
+  // must be writed like msg come globally with mark roommsg then choose rom and emit to specific room https://socket.io/get-started/private-messaging-part-3/ Persistent messages
+   socket.on("room-msg",(data)=>{
+    console.log("room-msg:",data);
+    // socket.emit('room-msg',"aaaaaaaa")
+    socket.to(data.toRoom).emit('room-msg',data.content);
+  })  
+  socket.on('joinroom',async(room,userid)=>{
+    
     let roomInfo = await gameController.getGame(room);
-    console.log(roomInfo);
+    
+    //modify it later to object
+    let answer = roomInfo ? `room ${roomInfo.code} created` : 'game not found'; 
     if(roomInfo){
         socket.join(roomInfo.code);
+        io.to(roomInfo.code).emit('room-msg',JSON.stringify(roomInfo));
+        socket.emit(userid,'room created');
+
     }
   })
-  socket.on('chat message', (msg) => {
-      console.log('message: ' + msg);
-    });
 
   socket.on('disconnect', function(){
       console.log('socket: user disconnected')
