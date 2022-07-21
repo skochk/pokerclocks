@@ -20,6 +20,7 @@ module.exports.registerNewGame = async(data)=>{
             levelStructure: data.levelStructure,
             currentLevel: data.currentLevel,
             currentTime: data.currentTime,
+            lastTimestamp: data.lastTimestamp,
             isGameGoing: data.isGameGoing,
             blindsStructure: data.blindsStructure
         })
@@ -33,11 +34,9 @@ module.exports.registerNewGame = async(data)=>{
 
 module.exports.updateGameInfo = async(data)=>{
     let filter = {code: data.code};
-    console.log('got controller');
 
     try{
         let updatedGame = await gameModel.findOneAndUpdate(filter,data, {new: true})
-        console.log('result controller: ',updatedGame)
         return updatedGame;
     }catch(err){
         throw err;
@@ -49,6 +48,33 @@ module.exports.getGame = async(code)=>{
         let gameInfo = await gameModel.findOne({code:code});
         return gameInfo;
     }catch(err){
-        throw err;
+        throw err;    
     }
 }
+
+module.exports.calcTotalLeft = function(game){
+    let totalSec = game.currentTime;
+    console.log("levels, current",game.levelStructure.length, game.currentLevel)
+    for(let i = game.currentLevel; i<=game.levelStructure.length-1; i++){
+        console.log(i, game.levelStructure[i])
+        totalSec += game.levelStructure[i].time;    
+    }
+    return totalSec;
+}
+
+module.exports.getCurrentLvlState = function(game,timeleft){
+    console.log('income data:',game,game.currentLevel,timeleft)
+    let thenextlvl = 0;
+    let restLvlTime = 0;
+    for(let i = game.levelStructure.length-1; i>game.currentLevel-1; i--){
+        console.log('loop:',i,game.levelStructure[i].time,timeleft)
+        if(timeleft > game.levelStructure[i].time){
+            timeleft = timeleft - game.levelStructure[i].time; 
+        }else{ 
+            restLvlTime = timeleft;
+            thenextlvl = game.levelStructure[i].level;
+        }
+    }
+    return {level: thenextlvl, time: restLvlTime};
+}
+

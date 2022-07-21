@@ -2,6 +2,7 @@ const { instrument } = require("@socket.io/admin-ui");
 const { Server } = require("socket.io");
 var http = require('http');
 let gameController = require('./controllers/gameApi');
+const game = require("./models/game");
 
 var server = http.createServer();
 const io = new Server(server, {
@@ -25,15 +26,29 @@ io.on( "connection", function( socket ) {
   // must be writed like msg come globally with mark roommsg then choose rom and emit to specific room https://socket.io/get-started/private-messaging-part-3/ Persistent messages
   socket.on("room-msg",async (data)=>{
     console.log("room-msg:",data);
-    let roomStateDB = await gameController.getGame(data.code);
+    let oldGameState = await gameController.getGame(data.code);
     
-    if(roomStateDB === data){
+    if(oldGameState === data){
       console.log("nothing new")
     }else{
-      //add logic for counting spended time while game .isGameGoing = true => currentTime must be changed
+      let currentTimestamp = Date.now();
+       
+      // if game paused game state must be updated  /// возможно это не надо делать, можно брать просто весь объект с фронта
+      if(oldGameState.isGameGoing == true  && data.isGameGoing == false){
+        let totalTimeLeft = await gameController.calcTotalLeft(data);
+        let newLeftTime = totalTimeLeft - Math.floor((currentTimestamp - data.lastTimestamp)/ 1000);
+        console.log('was time and new',totalTimeLeft, newLeftTime) 
+        let newLvl = await gameController.getCurrentLvlState(data,newLeftTime);
+        console.log('newLvl',newLvl)
+        data.level = newLvl.level;
+        data.currentTime = newLvl .currentTime;
+      }
+      data.lastTimestamp = currentTimestamp;
+      console.log('obj before saving',data)
       let updatedRoomState = await gameController.updateGameInfo(data);
-      socket.to(data.code).emit('room-msg',updatedRoomState);
-      console.log("old:",roomStateDB,"new:",updatedRoomState)
+      socket.to(updatedRoomState .code).emit('room-msg',updatedRoomState);
+      console.log("old:",oldGameState,"new:",updatedRoomState);
+      
       
     }
     
