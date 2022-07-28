@@ -23,7 +23,6 @@ io.on( "connection", function( socket ) {
     // console.log('any:',event, args);
   });
 
-  // must be writed like msg come globally with mark roommsg then choose rom and emit to specific room https://socket.io/get-started/private-messaging-part-3/ Persistent messages
   socket.on("room-msg",async (data)=>{
     console.log("room-msg:",data);
     let oldGameState = await gameController.getGame(data.code);
@@ -32,24 +31,26 @@ io.on( "connection", function( socket ) {
       console.log("nothing new")
     }else{
       let currentTimestamp = Date.now();
+      data.lastTimestamp = currentTimestamp;
+      let updatedRoomState = await gameController.updateGameInfo(data);
+      //add last timestamp
+      socket.to(updatedRoomState.code).emit('room-msg',updatedRoomState);
        
       // if game paused game state must be updated  /// возможно это не надо делать, можно брать просто весь объект с фронта
-      if(oldGameState.isGameGoing == true  && data.isGameGoing == false){
-        let totalTimeLeft = await gameController.calcTotalLeft(data);
-        let newLeftTime = totalTimeLeft - Math.floor((currentTimestamp - data.lastTimestamp)/ 1000);
-        console.log('was time and new',totalTimeLeft, newLeftTime) 
-        let newLvl = await gameController.getCurrentLvlState(data,newLeftTime);
-        console.log('newLvl',newLvl)
-        data.level = newLvl.level;
-        data.currentTime = newLvl .currentTime;
-      }
-      data.lastTimestamp = currentTimestamp;
-      console.log('obj before saving',data)
-      let updatedRoomState = await gameController.updateGameInfo(data);
-      socket.to(updatedRoomState .code).emit('room-msg',updatedRoomState);
-      console.log("old:",oldGameState,"new:",updatedRoomState);
-      
-      
+      // if(oldGameState.isGameGoing == true  && data.isGameGoing == false){
+      //   let totalTimeLeft = await gameController.calcTotalLeft(data);
+      //   let newLeftTime = totalTimeLeft - Math.floor((currentTimestamp - data.lastTimestamp)/ 1000);
+      //   console.log('was time and new',totalTimeLeft, newLeftTime) 
+      //   let newLvl = await gameController.getCurrentLvlState(data,newLeftTime);
+      //   console.log('newLvl',newLvl)
+      //   data.level = newLvl.level;
+      //   data.currentTime = newLvl .currentTime;
+      // }
+      // data.lastTimestamp = currentTimestamp;
+      // console.log('obj before saving',data)
+      // let updatedRoomState = await gameController.updateGameInfo(data);
+      // socket.to(updatedRoomState.code).emit('room-msg',updatedRoomState);
+      // console.log("old:",oldGameState,"new:",updatedRoomState);
     }
     
   })  
