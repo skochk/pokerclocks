@@ -29,11 +29,11 @@ io.on( "connection", function( socket ) {
     
     if(oldGameState === data){
       console.log("nothing new")
-    }else{
+    }else{  
       let currentTimestamp = Date.now();
       data.lastTimestamp = currentTimestamp;
-      let updatedRoomState = await gameController.updateGameInfo(data);
-      //add last timestamp
+      console.log(currentTimestamp);
+      let updatedRoomState = await gameController.updateGameInfo(data); 
       socket.to(updatedRoomState.code).emit('room-msg',updatedRoomState);
        
       // if game paused game state must be updated  /// возможно это не надо делать, можно брать просто весь объект с фронта
@@ -56,11 +56,13 @@ io.on( "connection", function( socket ) {
   })  
 
   socket.on('joinroom',async(room,userid)=>{
-     
-    let roomInfo = await gameController.getGame(room);
-    
+    console.log(room,userid);
+    // let roomInfo = await gameController.getGame(room);
+    let roomInfo = {"_id":"62d5c09314502fe3ae39cde0","code":"JEIYG","chipstack":7777,"levelStructure":[{"level":1,"time":600,"_id":"62d5c09314502fe3ae39cde1"},{"level":2,"time":600,"_id":"62d5c09314502fe3ae39cde2"}],"currentLevel":1,"currentTime":10,"isGameGoing":false,"blindsStructure":[{"level":1,"bigBlind":20,"smallBlind":10,"_id":"62d5c09314502fe3ae39cde3"},{"level":2,"bigBlind":40,"smallBlind":20,"_id":"62d5c09314502fe3ae39cde4"}],"__v":0,"lastTimestamp":1659102519002};
+      
+    console.log('gameinfo',JSON.stringify(roomInfo))
     //modify it later to object
-    let answer = roomInfo ? `room ${roomInfo.code} created` : 'game not found'; 
+    // let answer = roomInfo ? `room ${roomInfo.code} created` : 'game not found'; 
     if(roomInfo){
         socket.join(roomInfo.code);
         io.to(roomInfo.code).emit('room-msg',JSON.stringify(roomInfo));

@@ -4,6 +4,7 @@ import socketIOClient from "socket.io-client";
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import GamePage from './Components/GamePage';
+import HeaderBar from './Components/Header';
 
 const ENDPOINT = "http://localhost:8080";
 
@@ -22,6 +23,7 @@ function App() {
 
   return (
     <div className="App">
+      <HeaderBar/>
       <GamePage/>
     </div>
   );
