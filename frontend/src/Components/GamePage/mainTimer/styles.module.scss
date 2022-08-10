@@ -1,0 +1,30 @@
+.mainClocks{
+    height: 500px;
+    width: 100%;
+    border: 1px solid red;
+    color: #ffffff;
+    // font-size: 222px;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .progressBar{
+        width: 90%;
+        height: 15px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        .backLine{
+            background-color: #123142;
+            width: 100%;
+            height: 10px;
+        }
+        .progressLine{
+            height: 100%;
+            width: 100%;
+            background-color: #f35e13;
+            position: absolute;
+            right: 0;
+        }
+    }
+}
