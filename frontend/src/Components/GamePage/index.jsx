@@ -26,7 +26,9 @@ function GameComponent() {
 
   function handleGameChange(newValues){
     setGame(newValues);
+    // socket.emit('room-msg',newValues);
   } 
+  
   useEffect(()=>{
     socket.on('connect', () => {
       console.log('connected to socket')
@@ -42,10 +44,18 @@ function GameComponent() {
         let current = new Date().toISOString();
         setLastPong(current);
     });
-    socket.on('room-msg', function(msg,id){
-      console.log(tempCode,":",msg);
-      let parsed = JSON.parse(msg)
-      setGame(parsed);
+    socket.on('room-msg', function(msg){
+      let parsed = JSON.parse(msg);
+      console.log(parsed.status,parsed);
+      if(parsed.status == "msg"){
+        handleGameChange(parsed.payload);
+      }else if(parsed.status == "sync"){
+        console.log('sending back data for sync', game)
+        socket.emit('room-msg',{status:'msg',payload:game})
+      }else{
+        
+        console.log('error fetching data from socket')
+      }
       // setGameTime(parsed.currentTime);
     });
 

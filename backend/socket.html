@@ -48,6 +48,11 @@
 
         socket.on('room-msg',msg=>{
           console.log('roommsg:',msg);
+        });
+        window.addEventListener('beforeunload', function(event){
+          event.preventDefault();
+          socket.emit('room-msg','closed');
+          console.log('prevent closing');
         })
         
     </script>

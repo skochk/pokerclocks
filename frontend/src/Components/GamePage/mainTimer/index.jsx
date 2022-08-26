@@ -25,19 +25,20 @@ function MainClocks(props) {
    
     useEffect(()=>{ 
         const intervalID = setInterval(() => {
-            console.log(props.game.currentTime);
-            if(props.game.currentTime < 1){
-                if(props.game.levelStructure[props.game.currentLevel]){
-                    props.game.currentTime = props.game.levelStructure[props.game.currentLevel].time;
-                    props.game.currentLevel += 1;
-                } 
-                else{
-                    props.game.currentTime = 0;
-                    clearInterval(intervalID);
+            if(props.game.isGameGoing){
+                if(props.game.currentTime < 1){
+                    if(props.game.levelStructure[props.game.currentLevel]){
+                        props.game.currentTime = props.game.levelStructure[props.game.currentLevel].time;
+                        props.game.currentLevel += 1;
+                    } 
+                    else{
+                        props.game.currentTime = 0;
+                        clearInterval(intervalID);
+                    }
+                    props.updateParent(props.game);
+                }else{
+                    props.updateParent({...props.game,currentTime: props.game.currentTime-1});
                 }
-                props.updateParent(props.game);
-            }else{
-                props.updateParent({...props.game,currentTime: props.game.currentTime-1});
             }
             
             setProgress(calcTotalLeft(props.game));
@@ -49,13 +50,19 @@ function MainClocks(props) {
 
     return (
         <div className={styles.mainClocks}>
-            lvl:{props.game.currentLevel}<br></br>
-            {props.game.currentTime}
+            <div className="idk">
+                lvl:{props.game.currentLevel}<br></br>
+                {props.game.currentTime}
+            </div>
             <div className={styles.progressBar}>
                 <div className={styles.backLine}></div>
                 <div style={{width: 
                     progress >= 5 ? progress*100/totalLength +"%" : "5px"
                     }} className={styles.progressLine}></div>
+
+            </div>
+            <div className={styles.buttons}>
+                {props.game.isGameGoing ? <img src={process.env.PUBLIC_URL + "/images/pause.svg"} alt="" /> : <img src={process.env.PUBLIC_URL + "/images/play.svg"} alt="" />}
             </div>
         </div>
     )

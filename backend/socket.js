@@ -20,53 +20,50 @@ instrument(io, {
 io.on( "connection", function( socket ) {
     console.log("socket1: A user connected" );
     socket.onAny((event, ...args) => {
-    // console.log('any:',event, args);
-  });
+      // console.log('any:',event, args);
+    });
 
   socket.on("room-msg",async (data)=>{
-    console.log("room-msg:",data);
-    let oldGameState = await gameController.getGame(data.code);
+    console.log("room-msg:",JSON.stringify(data));
+    let oldGameState = await gameController.getGame(data.payload.code);
     
-    if(oldGameState === data){
+    if(oldGameState === data.payload){
       console.log("nothing new")
     }else{  
       let currentTimestamp = Date.now();
       data.lastTimestamp = currentTimestamp;
       console.log(currentTimestamp);
-      let updatedRoomState = await gameController.updateGameInfo(data); 
-      socket.to(updatedRoomState.code).emit('room-msg',updatedRoomState);
-       
-      // if game paused game state must be updated  /// возможно это не надо делать, можно брать просто весь объект с фронта
-      // if(oldGameState.isGameGoing == true  && data.isGameGoing == false){
-      //   let totalTimeLeft = await gameController.calcTotalLeft(data);
-      //   let newLeftTime = totalTimeLeft - Math.floor((currentTimestamp - data.lastTimestamp)/ 1000);
-      //   console.log('was time and new',totalTimeLeft, newLeftTime) 
-      //   let newLvl = await gameController.getCurrentLvlState(data,newLeftTime);
-      //   console.log('newLvl',newLvl)
-      //   data.level = newLvl.level;
-      //   data.currentTime = newLvl .currentTime;
-      // }
-      // data.lastTimestamp = currentTimestamp;
-      // console.log('obj before saving',data)
-      // let updatedRoomState = await gameController.updateGameInfo(data);
-      // socket.to(updatedRoomState.code).emit('room-msg',updatedRoomState);
-      // console.log("old:",oldGameState,"new:",updatedRoomState);
+      let updatedRoomState = await gameController.updateGameInfo(data.payload); 
+      console.log('updatedRoomState:',updatedRoomState);
+      socket.to(updatedRoomState.code).emit('room-msg',{status:"msg",payload:updatedRoomState});
     }
     
   })  
 
   socket.on('joinroom',async(room,userid)=>{
     console.log(room,userid);
-    // let roomInfo = await gameController.getGame(room);
-    let roomInfo = {"_id":"62d5c09314502fe3ae39cde0","code":"JEIYG","currentTime":10,"chipstack":7777,"levelStructure":[{"level":1,"time":600,"_id":"62d5c09314502fe3ae39cde1"},{"level":2,"time":600,"_id":"62d5c09314502fe3ae39cde2"}],"currentLevel":1,"isGameGoing":false,"blindsStructure":[{"level":1,"bigBlind":20,"smallBlind":10,"_id":"62d5c09314502fe3ae39cde3"},{"level":2,"bigBlind":40,"smallBlind":20,"_id":"62d5c09314502fe3ae39cde4"}],"__v":0,"lastTimestamp":1659102519002};
+    let roomInfo = await gameController.getGame(room);
+    // console.log('gameinfo',JSON.stringify(roomInfo))
+    // let roomInfo = {"_id":"62d5c09314502fe3ae39cde0","code":"JEIYG","currentTime":10,"chipstack":7777,"levelStructure":[{"level":1,"time":600,"_id":"62d5c09314502fe3ae39cde1"},{"level":2,"time":600,"_id":"62d5c09314502fe3ae39cde2"}],"currentLevel":1,"isGameGoing":true,"blindsStructure":[{"level":1,"bigBlind":20,"smallBlind":10,"_id":"62d5c09314502fe3ae39cde3"},{"level":2,"bigBlind":40,"smallBlind":20,"_id":"62d5c09314502fe3ae39cde4"}],"__v":0,"lastTimestamp":1659102519002};
       
-    console.log('gameinfo',JSON.stringify(roomInfo))
     //modify it later to object
     // let answer = roomInfo ? `room ${roomInfo.code} created` : 'game not found'; 
     if(roomInfo){
-        socket.join(roomInfo.code);
-        io.to(roomInfo.code).emit('room-msg',JSON.stringify(roomInfo));
-        socket.emit(userid,'room created');
+        if(io.sockets.adapter.rooms.has(roomInfo.code)){
+          console.log('room exist');
+          if(roomInfo.isGameGoing){
+            console.log('a')
+            io.to(roomInfo.code).emit('room-msg',JSON.stringify({status:"sync"}));
+          }else{
+            console.log('abbb')
+            io.to(roomInfo.code).emit('room-msg',{status:"msg",payload:roomInfo});
+          }
+        }else{
+          console.log('going else');
+          socket.join(roomInfo.code);
+          io.to(roomInfo.code).emit('room-msg',JSON.stringify({status:"msg",payload:roomInfo}));
+          socket.emit(userid,'room created');
+        }
 
     }
   });
