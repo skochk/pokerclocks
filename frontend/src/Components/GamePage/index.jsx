@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect ,useRef} from "react";
 import styles from './styles.module.scss'
 import io from 'socket.io-client';
 import MainTimer from './mainTimer';
@@ -6,13 +6,15 @@ import axios from "axios"
 
 
 const ENDPOINT = "http://localhost:8080";
-const socket = io(ENDPOINT);
+// const socket = io(ENDPOINT);
 
 function GameComponent() {
   const [isSocketConn, setIsSocketConn] = useState(false);
   const [lastPong, setLastPong] = useState(null);
   const [game,setGame] = useState({});
   const [currentTime, setCurrrentTime] = useState(new Date().getHours() + ':' + new Date().getMinutes());
+  const socketRef = useRef(null);
+  const gameRef = useRef({});
 
 
   useEffect(()=>{
@@ -26,43 +28,45 @@ function GameComponent() {
 
   function handleGameChange(newValues){
     setGame(newValues);
+    gameRef.current = newValues;
     // socket.emit('room-msg',newValues);
   } 
   
   useEffect(()=>{
-    socket.on('connect', () => {
+    socketRef.current = io(ENDPOINT);
+    socketRef.current.on('connect', () => {
       console.log('connected to socket')
       setIsSocketConn(true);
     });
-    socket.emit('joinroom',tempCode,socket.id);
+    socketRef.current.emit('joinroom',tempCode,socketRef.current.id);
 
-    socket.on('disconnect', () => {
+    socketRef.current.on('disconnect', () => {
         setIsSocketConn(false);
     });
 
-    socket.on('pong', () => {
-        let current = new Date().toISOString();
-        setLastPong(current);
-    });
-    socket.on('room-msg', function(msg){
+    // socket.on('pong', () => {
+    //     let current = new Date().toISOString();
+    //     setLastPong(current);
+    // });
+    socketRef.current.on('room-msg', function(msg){
+      console.log('tst',msg)
       let parsed = JSON.parse(msg);
       console.log(parsed.status,parsed);
       if(parsed.status == "msg"){
         handleGameChange(parsed.payload);
-      }else if(parsed.status == "sync"){
-        console.log('sending back data for sync', game)
-        socket.emit('room-msg',{status:'msg',payload:game})
+      }else if(parsed.status == "sync" && Object.keys(gameRef.current).length){
+        console.log('sending back data for sync', gameRef.current)
+        socketRef.current.emit('room-msg',{status:'msg',payload:gameRef.current})
       }else{
-        
         console.log('error fetching data from socket')
       }
       // setGameTime(parsed.currentTime);
     });
 
     return () => {
-        socket.off('connect');
-        socket.off('disconnect');
-        socket.off('pong');
+      socketRef.current.off('connect');
+      socketRef.current.off('disconnect');
+      socketRef.current.off('pong');
     };
   },[]); 
 

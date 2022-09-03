@@ -34,8 +34,8 @@ io.on( "connection", function( socket ) {
       data.lastTimestamp = currentTimestamp;
       console.log(currentTimestamp);
       let updatedRoomState = await gameController.updateGameInfo(data.payload); 
-      console.log('updatedRoomState:',updatedRoomState);
-      socket.to(updatedRoomState.code).emit('room-msg',{status:"msg",payload:updatedRoomState});
+      console.log('updatedRoomState:',JSON.stringify(updatedRoomState));
+      socket.to(updatedRoomState.code).emit('room-msg',JSON.stringify({status:"msg",payload:updatedRoomState}));
     }
     
   })  
@@ -50,16 +50,17 @@ io.on( "connection", function( socket ) {
     // let answer = roomInfo ? `room ${roomInfo.code} created` : 'game not found'; 
     if(roomInfo){
         if(io.sockets.adapter.rooms.has(roomInfo.code)){
-          console.log('room exist');
+          console.log('room exist', roomInfo.isGameGoing,JSON.stringify(roomInfo));
+          
+          socket.join(roomInfo.code);   
           if(roomInfo.isGameGoing){
-            console.log('a')
             io.to(roomInfo.code).emit('room-msg',JSON.stringify({status:"sync"}));
           }else{
-            console.log('abbb')
-            io.to(roomInfo.code).emit('room-msg',{status:"msg",payload:roomInfo});
+            console.log('game paused');
+            io.to(roomInfo.code).emit('room-msg',JSON.stringify({status:"msg",payload:roomInfo}));
           }
         }else{
-          console.log('going else');
+          console.log('room isnt exist, creating room ',roomInfo.code);
           socket.join(roomInfo.code);
           io.to(roomInfo.code).emit('room-msg',JSON.stringify({status:"msg",payload:roomInfo}));
           socket.emit(userid,'room created');
