@@ -2,7 +2,7 @@ import React, { useState, useEffect ,useRef} from "react";
 import styles from './styles.module.scss'
 import io from 'socket.io-client';
 import MainTimer from './mainTimer';
-import axios from "axios"
+import axios from "axios";
 
 
 const ENDPOINT = "http://localhost:8080";
@@ -29,13 +29,16 @@ function GameComponent() {
   function handleGameChange(newValues){
     setGame(newValues);
     gameRef.current = newValues;
-    // socket.emit('room-msg',newValues);
+    // socketRef.current.emit('room-msg',newValues);
   } 
+  const emitGameChanges = (values)=>{
+    socketRef.current.emit('room-msg',{status:'msg',payload:values});
+  }
   
   useEffect(()=>{
     socketRef.current = io(ENDPOINT);
     socketRef.current.on('connect', () => {
-      console.log('connected to socket')
+      console.log('connected to socket');
       setIsSocketConn(true);
     });
     socketRef.current.emit('joinroom',tempCode,socketRef.current.id);
@@ -44,12 +47,7 @@ function GameComponent() {
         setIsSocketConn(false);
     });
 
-    // socket.on('pong', () => {
-    //     let current = new Date().toISOString();
-    //     setLastPong(current);
-    // });
     socketRef.current.on('room-msg', function(msg){
-      console.log('tst',msg)
       let parsed = JSON.parse(msg);
       console.log(parsed.status,parsed);
       if(parsed.status == "msg"){
@@ -58,12 +56,15 @@ function GameComponent() {
         console.log('sending back data for sync', gameRef.current)
         socketRef.current.emit('room-msg',{status:'msg',payload:gameRef.current})
       }else{
-        console.log('error fetching data from socket')
+        console.log('error fetching data from socket');
       }
-      // setGameTime(parsed.currentTime);
     });
+    // const emitInterval = setInterval(() => {
+    //   emitGameChanges(gameRef.current);
+    // }, 10000);
 
     return () => {
+      // clearInterval(emitInterval);
       socketRef.current.off('connect');
       socketRef.current.off('disconnect');
       socketRef.current.off('pong');
@@ -87,7 +88,8 @@ function GameComponent() {
               {currentTime}
             </div>
           </div>
-          <MainTimer game={game} updateParent={handleGameChange}/>
+          
+          <MainTimer game={game} updateState={handleGameChange} emitState={emitGameChanges}/>
         </div>
 
         <div className={styles.element}></div>

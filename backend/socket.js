@@ -3,6 +3,7 @@ const { Server } = require("socket.io");
 var http = require('http');
 let gameController = require('./controllers/gameApi');
 const game = require("./models/game");
+const { update } = require("./models/game");
 
 var server = http.createServer();
 const io = new Server(server, {
@@ -17,11 +18,12 @@ instrument(io, {
   auth: false
 });
 
-io.on( "connection", function( socket ) {
-    console.log("socket1: A user connected" );
-    socket.onAny((event, ...args) => {
-      // console.log('any:',event, args);
-    });
+io.on("connection", function( socket ) {
+  console.log("socket1: A user connected" );
+  socket.onAny((event, ...args) => {
+    // console.log('any:',event, args);
+  });
+  socket.roomList = [];
 
   socket.on("room-msg",async (data)=>{
     console.log("room-msg:",JSON.stringify(data));
@@ -30,11 +32,9 @@ io.on( "connection", function( socket ) {
     if(oldGameState === data.payload){
       console.log("nothing new")
     }else{  
-      let currentTimestamp = Date.now();
-      data.lastTimestamp = currentTimestamp;
-      console.log(currentTimestamp);
+      let currentTimestamp = Date.now(); 
+      data.payload.lastTimestamp = currentTimestamp;
       let updatedRoomState = await gameController.updateGameInfo(data.payload); 
-      console.log('updatedRoomState:',JSON.stringify(updatedRoomState));
       socket.to(updatedRoomState.code).emit('room-msg',JSON.stringify({status:"msg",payload:updatedRoomState}));
     }
     
@@ -49,29 +49,41 @@ io.on( "connection", function( socket ) {
     //modify it later to object
     // let answer = roomInfo ? `room ${roomInfo.code} created` : 'game not found'; 
     if(roomInfo){
-        if(io.sockets.adapter.rooms.has(roomInfo.code)){
-          console.log('room exist', roomInfo.isGameGoing,JSON.stringify(roomInfo));
-          
-          socket.join(roomInfo.code);   
-          if(roomInfo.isGameGoing){
-            io.to(roomInfo.code).emit('room-msg',JSON.stringify({status:"sync"}));
-          }else{
-            console.log('game paused');
-            io.to(roomInfo.code).emit('room-msg',JSON.stringify({status:"msg",payload:roomInfo}));
-          }
-        }else{
-          console.log('room isnt exist, creating room ',roomInfo.code);
-          socket.join(roomInfo.code);
-          io.to(roomInfo.code).emit('room-msg',JSON.stringify({status:"msg",payload:roomInfo}));
-          socket.emit(userid,'room created');
-        }
+      if(io.sockets.adapter.rooms.has(roomInfo.code)){
+        console.log('room exist', roomInfo.isGameGoing,JSON.stringify(roomInfo));
+        
+        socket.join(roomInfo.code);  
+        socket.roomList.push(roomInfo.code);
 
+        if(roomInfo.isGameGoing){
+          io.to(roomInfo.code).emit('room-msg',JSON.stringify({status:"sync"}));
+        }else{
+          io.to(roomInfo.code).emit('room-msg',JSON.stringify({status:"msg",payload:roomInfo}));
+        }
+      }else{
+        console.log('room isnt exist, creating room ',roomInfo.code);
+        socket.join(roomInfo.code);
+        socket.roomList.push(roomInfo.code);
+        io.to(roomInfo.code).emit('room-msg',JSON.stringify({status:"msg",payload:roomInfo}));
+        socket.emit(userid,'room created');
+      }
     }
   });
 
 
   socket.on('disconnect', function(){
-      console.log('socket: user disconnected')
+    console.log('socket: user disconnected',socket.roomList);
+    socket.roomList.map(async(room)=>{
+      let game = await gameController.getGame(room);
+      
+      if(game.isGameGoing && !io.sockets.adapter.rooms.has(room)){
+        let updated = await gameController.updateGameByTimestamp(game);
+        updated.isGameGoing = false;
+        updated.lastTimestamp = Date.now();
+        gameController.updateGameInfo(updated);
+        console.log(`all users from ${room} left so pausing game`);
+      }
+    })
   })
 });
 

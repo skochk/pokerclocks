@@ -27,4 +27,40 @@
             right: 0;
         }
     }
+    .bottomButtons{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        width: 100%;
+        padding: 30px;
+        .addTimeButton{
+            cursor: pointer;
+            height: 60px;
+        }
+        .settings{
+            cursor: pointer;
+            height: 48px;
+        }
+    }
+    .buttons{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .previousLevel{
+            transform: scaleX(-1);
+            margin-right: -70px;
+            height: 200px;
+            cursor: pointer;
+        }
+        .nextLevel{
+            margin-left: -68px;
+            height: 200px;
+            cursor: pointer;
+        }
+        .playPause{
+            cursor: pointer;
+            height: 185px;
+        }
+    }
 }

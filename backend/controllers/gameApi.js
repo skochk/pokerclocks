@@ -52,29 +52,25 @@ module.exports.getGame = async(code)=>{
     }
 }
 
-module.exports.calcTotalLeft = function(game){
-    let totalSec = game.currentTime;
-    console.log("levels, current",game.levelStructure.length, game.currentLevel)
-    for(let i = game.currentLevel; i<=game.levelStructure.length-1; i++){
-        console.log(i, game.levelStructure[i])
-        totalSec += game.levelStructure[i].time;    
-    }
-    return totalSec;
-}
-
-module.exports.getCurrentLvlState = function(game,timeleft){
-    console.log('income data:',game,game.currentLevel,timeleft)
-    let thenextlvl = 0;
-    let restLvlTime = 0;
-    for(let i = game.levelStructure.length-1; i>game.currentLevel-1; i--){
-        console.log('loop:',i,game.levelStructure[i].time,timeleft)
-        if(timeleft > game.levelStructure[i].time){
-            timeleft = timeleft - game.levelStructure[i].time; 
-        }else{ 
-            restLvlTime = timeleft;
-            thenextlvl = game.levelStructure[i].level;
+module.exports.updateGameByTimestamp = function(game){
+    let obj = game;
+    let timeGone = Math.round((Date.now() - obj.lastTimestamp)/1000);
+    if(obj.currentTime > timeGone){
+        obj.currentTime -= timeGone;
+        return obj;
+    }else{
+        timeGone -= obj.currentTime;
+        obj.currentLevel +=1;
+        //next lvl
+        for(let i = obj.currentLevel-1;i<obj.levelStructure.length;i++){
+            if(obj.levelStructure[i].time > timeGone){
+                obj.currentTime = obj.levelStructure[i].time - timeGone;
+                return obj;
+            }else{
+                timeGone -= obj.levelStructure[i].time;
+                obj.currentLevel += 1;
+            }
         }
     }
-    return {level: thenextlvl, time: restLvlTime};
-}
-
+    return obj;
+}   

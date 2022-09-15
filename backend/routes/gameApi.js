@@ -17,7 +17,7 @@ router.post('/createGame', function(req, res) {
 
 router.post('/test', function(req,res){
     (async function(){
-        console.log(req.body)
+        console.log(req.body);
         let result = await gameController.updateGameInfo(req.body);
         res.send(result)
     })()

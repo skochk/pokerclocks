@@ -2,26 +2,10 @@ import React, { useState, useEffect } from "react";
 import styles from './styles.module.scss'
 
 
-
-function calcTotalLeft(game){
-    let totalSec = game.currentTime;
-    for(let i = game.currentLevel; i<=game.levelStructure.length-1; i++){
-        totalSec += game.levelStructure[i].time;    
-    }
-
-    return totalSec;
-}
-function calcGameLength(game){
-    let gameLenth = 0;
-    for(let i = 0;i<game.levelStructure.length;i++){
-        gameLenth +=game.levelStructure[i].time;
-    }
-    return gameLenth;
-}
-
 function MainClocks(props) {
     const [progress,setProgress] = useState();
     const [totalLength, setTotalLength] = useState(null);
+    
    
     useEffect(()=>{ 
         const intervalID = setInterval(() => {
@@ -35,9 +19,9 @@ function MainClocks(props) {
                         props.game.currentTime = 0;
                         clearInterval(intervalID);
                     }
-                    props.updateParent(props.game);
+                    props.updateState(props.game);
                 }else{
-                    props.updateParent({...props.game,currentTime: props.game.currentTime-1});
+                    props.updateState({...props.game,currentTime: props.game.currentTime-1});
                 }
             }
             
@@ -47,22 +31,64 @@ function MainClocks(props) {
         return () => clearInterval(intervalID); //prevent wrong callback from setInterval
       },[props.game]);  
     
+    
+    function calcTotalLeft(game){
+        let totalSec = game.currentTime;
+        for(let i = game.currentLevel; i<=game.levelStructure.length-1; i++){
+            totalSec += game.levelStructure[i].time;    
+        }
+    
+        return totalSec;
+    }
+    function calcGameLength(game){
+        let gameLenth = 0;
+        for(let i = 0;i<game.levelStructure.length;i++){
+            gameLenth +=game.levelStructure[i].time;
+        }
+        return gameLenth;
+    }
+
+    function convertToMS(seconds){
+        return (seconds - seconds % 60)/60 + ":" + seconds % 60;
+    }
+    function updatePauseState(){
+        props.updateState({...props.game,isGameGoing: !props.game.isGameGoing});
+        props.emitState({...props.game,isGameGoing: !props.game.isGameGoing});
+    }
+    function addMinuteState(){
+        props.updateState({...props.game,currentTime: props.game.currentTime+60});
+        props.emitState({...props.game,currentTime: props.game.currentTime+60});
+    }
+    function changeLvlState(direction){
+        let current = props.game.currentLevel+direction-1;
+        if(props.game.levelStructure[current]){
+            props.updateState({...props.game,currentLevel: current+1, currentTime: props.game.levelStructure[current].time});
+            props.emitState({...props.game,currentLevel: current+1, currentTime: props.game.levelStructure[current].time});
+        }
+    }
 
     return (
         <div className={styles.mainClocks}>
             <div className="idk">
                 lvl:{props.game.currentLevel}<br></br>
-                {props.game.currentTime}
+                {convertToMS(props.game.currentTime)}
             </div>
             <div className={styles.progressBar}>
                 <div className={styles.backLine}></div>
                 <div style={{width: 
                     progress >= 5 ? progress*100/totalLength +"%" : "5px"
                     }} className={styles.progressLine}></div>
-
-            </div>
+                </div>
             <div className={styles.buttons}>
-                {props.game.isGameGoing ? <img src={process.env.PUBLIC_URL + "/images/pause.svg"} alt="" /> : <img src={process.env.PUBLIC_URL + "/images/play.svg"} alt="" />}
+                <img src={process.env.PUBLIC_URL+'/images/skipnext.svg'} alt="previousLevel" className={styles.previousLevel} onClick={e=>changeLvlState(-1)}/>
+                <div onClick={(e) =>updatePauseState()}>
+                    {props.game.isGameGoing ? <img src={process.env.PUBLIC_URL + "/images/pause.svg"} alt="pause"  className={styles.playPause}/> : <img src={process.env.PUBLIC_URL + "/images/play.svg"} alt="play"  className={styles.playPause}/>}
+                </div>
+                <img src={process.env.PUBLIC_URL+'/images/skipnext.svg'} alt="previousLevel" className={styles.nextLevel}  onClick={e=>changeLvlState(1)}/>
+            </div>
+            <div className={styles.bottomButtons}>
+                <img src={process.env.PUBLIC_URL+'/images/settings.svg'} alt="settings" className={styles.settings}/>
+                <img src={process.env.PUBLIC_URL+'/images/plusminute.svg'} alt="addMinute" className={styles.addTimeButton}  onClick={e=>addMinuteState()}/>
             </div>
         </div>
     )
