@@ -69,8 +69,7 @@ function MainClocks(props) {
 
     return (
         <div className={styles.mainClocks}>
-            <div className="idk">
-                lvl:{props.game.currentLevel}<br></br>
+            <div className={styles.mainTime}>
                 {convertToMS(props.game.currentTime)}
             </div>
             <div className={styles.progressBar}>

@@ -22,7 +22,7 @@ module.exports.registerNewGame = async(data)=>{
             currentTime: data.currentTime,
             lastTimestamp: data.lastTimestamp,
             isGameGoing: data.isGameGoing,
-            blindsStructure: data.blindsStructure
+            // blindsStructure: data.blindsStructure
         })
         console.log(data)
         await newGame.save();
@@ -34,7 +34,7 @@ module.exports.registerNewGame = async(data)=>{
 
 module.exports.updateGameInfo = async(data)=>{
     let filter = {code: data.code};
-
+    console.log(data.code)
     try{
         let updatedGame = await gameModel.findOneAndUpdate(filter,data, {new: true})
         return updatedGame;

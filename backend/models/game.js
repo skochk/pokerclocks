@@ -5,14 +5,16 @@ const Schema = mongoose.Schema;
 
 const levelStructureSchema = new Schema({
     level: Number,
-    time: Number // in sec's
-})
-
-const blindsStructureSchema = new Schema({
-    level: Number,
     bigBlind: Number,
     smallBlind: Number,
+    time: Number, // in sec's
 })
+
+// const blindsStructureSchema = new Schema({
+//     level: Number,
+//     bigBlind: Number,
+//     smallBlind: Number,
+// })
 
 const gameScheme = new Schema({
     code: String, // game code 
@@ -22,7 +24,7 @@ const gameScheme = new Schema({
     currentTime: Number, // in sec's
     lastTimestamp: Number,
     isGameGoing: {type: Boolean, default: false }, // true = game going 
-    blindsStructure: [blindsStructureSchema],
+    // blindsStructure: [blindsStructureSchema],
  
 });
 

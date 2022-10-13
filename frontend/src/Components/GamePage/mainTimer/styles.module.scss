@@ -8,6 +8,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    .mainTime{
+        font-size: 150px;
+    }
     .progressBar{
         width: 90%;
         height: 15px;
@@ -54,7 +57,7 @@
             cursor: pointer;
         }
         .nextLevel{
-            margin-left: -68px;
+            margin-left: -60px;
             height: 200px;
             cursor: pointer;
         }

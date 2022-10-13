@@ -1,0 +1,24 @@
+.rows{
+    width: 100%;
+    border: 1px solid transparent;
+    position: relative;
+    display: block;
+
+}
+.rows:nth-child(3){
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.alert{
+    width: 125px;
+    position: absolute;
+    right: -4px;
+    top: 16px;
+    font-size: 12px;
+    background-color: red;
+    opacity: 0.6;
+    border-radius: 10px;
+}
