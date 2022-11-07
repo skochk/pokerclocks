@@ -34,7 +34,7 @@ module.exports.registerNewGame = async(data)=>{
 
 module.exports.updateGameInfo = async(data)=>{
     let filter = {code: data.code};
-    console.log(data.code)
+    console.log("updateGameInfo ",data.code, JSON.stringify(data))
     try{
         let updatedGame = await gameModel.findOneAndUpdate(filter,data, {new: true})
         return updatedGame;

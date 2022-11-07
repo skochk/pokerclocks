@@ -34,6 +34,7 @@ function MainClocks(props) {
     
     function calcTotalLeft(game){
         let totalSec = game.currentTime;
+        // console.log('calcTotalLeft:',game);
         for(let i = game.currentLevel; i<=game.levelStructure.length-1; i++){
             totalSec += game.levelStructure[i].time;    
         }

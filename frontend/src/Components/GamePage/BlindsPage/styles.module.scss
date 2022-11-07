@@ -24,8 +24,30 @@
     }
 }
 
-.editableTable .rows{
-    border: 1px solid #de8383;
+.editableTable{
+    .rows{
+        border: 1px solid #de8383;
+    }
+    .editRowsButtons{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        img{
+            height: 21.8px;
+            padding-left: 50px;
+        }
+        .remove{
+            transform: rotate(45deg);
+            padding-left: 10px;
+            margin-top: -7px;
+            cursor: pointer;
+        }
+        .add{
+            cursor: pointer;
+            width: 20px;
+        }
+    }
 }
 
 [contentEditable=true]:empty:not(:focus):before {

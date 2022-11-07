@@ -33,6 +33,7 @@ function GameComponent() {
     // socketRef.current.emit('room-msg',newValues);
   } 
   const emitGameChanges = (values)=>{
+    delete values._id;
     socketRef.current.emit('room-msg',{status:'msg',payload:values});
   }
   

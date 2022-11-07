@@ -2,8 +2,9 @@
     width: 100%;
     border: 1px solid transparent;
     position: relative;
-    display: block;
-
+    display: flex;
+    justify-content: center;
+    align-content: space-between;
 }
 .rows:nth-child(3){
     display: flex;
