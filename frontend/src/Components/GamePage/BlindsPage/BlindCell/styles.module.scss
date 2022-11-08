@@ -5,6 +5,26 @@
     display: flex;
     justify-content: center;
     align-content: space-between;
+    cursor: pointer;
+    .cell{
+        width: 100%;
+        border: 1px solid transparent;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-content: space-between;
+        cursor: pointer;
+    }
+    .unfilled{
+        background-color: rgb(255 0 0 / 30%);
+        border: 1px solid red;
+        width: 100%;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-content: space-between;
+        cursor: pointer;
+    }
 }
 .rows:nth-child(3){
     display: flex;

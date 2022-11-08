@@ -1,0 +1,24 @@
+.contentArea{
+    border: 1px solid red;
+    width: 100%;
+    height: 700px;
+    .blinds{
+        font-size: 70px;
+        display: flex;
+        font-weight: bold;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        .blindRow{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+            p{
+               font-size: 120px; 
+            }
+        }
+
+    }
+}

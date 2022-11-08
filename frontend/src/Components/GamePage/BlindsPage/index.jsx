@@ -17,8 +17,13 @@ function BlindComponent(props) {
     },[props.game]);
 
     function handleEditEditable(){
+        if(isEditable == false){
+            let updState = {...game,isGameGoing:false};
+            setGame(updState);
+            props.updateState(updState);
+            props.emitState(updState);
+        }
         setEditable(isEditable=>!isEditable);
-        console.log('editable:',isEditable);
     }
 
     function handleIsblindsFilled(bool){
@@ -51,6 +56,7 @@ function BlindComponent(props) {
 
     function saveBlindsUpdate(){
 
+        //if current level more than blinds levels total
         let updatedGameState = {...game,levelStructure: blinds};
         if(updatedGameState.currentLevel > updatedGameState.levelStructure.length){
             updatedGameState.currentLevel = updatedGameState.levelStructure.length;
@@ -83,11 +89,11 @@ function BlindComponent(props) {
     return(
         <div className={isEditable ? [styles.table,styles.editableTable].join(' ') : styles.table}>
             <DragDropContext onDragEnd={handleOnDragEnd}>
-                <Droppable droppableId="list-container">
+                <Droppable droppableId="list-container" >
                     {(provided) => (
                         <div className="list-container" {...provided.droppableProps} ref={provided.innerRef}>
                         {blinds ? blinds.map((el,index)=>(
-                            <Draggable key={el._id} draggableId={el._id} index={index}>
+                            <Draggable key={el._id} draggableId={el._id} index={index} isDragDisabled={!isEditable}>
                                 {(provided) => (
                                     <div className={index+1 == game.currentLevel && !isEditable ? [styles.row,styles.active].join(' ') : styles.row} 
                                         key={el._id} 

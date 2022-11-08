@@ -3,6 +3,7 @@ import styles from './styles.module.scss'
 import io from 'socket.io-client';
 import MainTimer from './mainTimer';
 import Blinds from './BlindsPage';
+import BigBlinds from './BigBlinds';
 import axios from "axios";
 
 
@@ -76,7 +77,7 @@ function GameComponent() {
 
   return (
     <div className={styles.content}>
-        <div className={styles.temp}>is socket: {isSocketConn},game:{JSON.stringify(game)}</div>
+        {/* <div className={styles.temp}>is socket: {isSocketConn},game:{JSON.stringify(game)}</div> */}
         <div className={styles.element}>
           <Blinds game={game} updateState={handleGameChange} emitState={emitGameChanges}/>
         </div>
@@ -96,7 +97,9 @@ function GameComponent() {
           <MainTimer game={game} updateState={handleGameChange} emitState={emitGameChanges}/>
         </div>
 
-        <div className={styles.element}></div>
+        <div className={styles.element}>
+          <BigBlinds game={game}/>
+        </div>
     </div>
   )
 }

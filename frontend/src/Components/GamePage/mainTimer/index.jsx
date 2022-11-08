@@ -31,7 +31,6 @@ function MainClocks(props) {
         return () => clearInterval(intervalID); //prevent wrong callback from setInterval
       },[props.game]);  
     
-    
     function calcTotalLeft(game){
         let totalSec = game.currentTime;
         // console.log('calcTotalLeft:',game);
@@ -48,7 +47,6 @@ function MainClocks(props) {
         }
         return gameLenth;
     }
-
     function convertToMS(seconds){
         return (seconds - seconds % 60)/60 + ":" + seconds % 60;
     }
@@ -75,9 +73,12 @@ function MainClocks(props) {
             </div>
             <div className={styles.progressBar}>
                 <div className={styles.backLine}></div>
-                <div style={{width: 
+                <div style=
+                    {{width: 
                     progress >= 5 ? progress*100/totalLength +"%" : "5px"
-                    }} className={styles.progressLine}></div>
+                    }} className={styles.progressLine}
+                >
+                </div>
                 </div>
             <div className={styles.buttons}>
                 <img src={process.env.PUBLIC_URL+'/images/skipnext.svg'} alt="previousLevel" className={styles.previousLevel} onClick={e=>changeLvlState(-1)}/>
@@ -87,7 +88,7 @@ function MainClocks(props) {
                 <img src={process.env.PUBLIC_URL+'/images/skipnext.svg'} alt="previousLevel" className={styles.nextLevel}  onClick={e=>changeLvlState(1)}/>
             </div>
             <div className={styles.bottomButtons}>
-                <img src={process.env.PUBLIC_URL+'/images/settings.svg'} alt="settings" className={styles.settings}/>
+                {/* <img src={process.env.PUBLIC_URL+'/images/settings.svg'} alt="settings" className={styles.settings}/> */}
                 <img src={process.env.PUBLIC_URL+'/images/plusminute.svg'} alt="addMinute" className={styles.addTimeButton}  onClick={e=>addMinuteState()}/>
             </div>
         </div>
