@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React,{useState, useEffect} from 'react';
 import styles from './styles.module.scss';
 import uuid4 from "uuid4";
 
@@ -6,39 +6,39 @@ import uuid4 from "uuid4";
 
 function CellCoponent(props) {
   const [isFilled,setFilled] = useState(true);
+  const [inputValue,setInputValue] = useState("");
+  useEffect(()=>{
+    setInputValue(props.data);
+  },[props.data])
 
   let isInputEmpty = (evt,key)=>{
-    console.log(evt.currentTarget.textContent,key);
-    if (evt.currentTarget.textContent.trim().length == 0) {
-      console.log('empty input')
+    console.log("event text value:",evt.currentTarget.value,key);
+    if (evt.currentTarget.value.trim().length == 0) {
+      setInputValue(evt.currentTarget.value);
       setFilled(false);
+      props.updateUnfilled("add",props._id,props.dataText)
     }else{
-      props.handleInput(props.data._id,key,evt.currentTarget.textContent);
-      console.log('input filled')
+      setInputValue(evt.currentTarget.value);
+      props.handleInput(props._id,key,evt.currentTarget.value);
+      props.updateUnfilled("del",props._id,props.dataText)
       setFilled(true);
     }
   }
 
+  function convertToMS(seconds){
+    return (seconds - seconds % 60)/60 + ":" + seconds % 60 + "'";
+}
   return (
     <div className={styles.rows} id={props.data._id}>
-      {
-      Object.entries(props.data).map(el=>{
-        if(el[0] !== "_id"){
-          return <div
-                    contentEditable={props.isEditable} 
-                    onKeyPress={(event) => {if(!/[0-9]/.test(event.key)){event.preventDefault();}}}
-                    className={isFilled ? styles.cell : styles.unfilled}
-                    onInput={e=>isInputEmpty(e,el[0])}
-                    onChange={e=>console.log(e)}
-                    data-text={el[0]}
-                    key={uuid4()}
-                    suppressContentEditableWarning={true}
-                   >
-                    {el[1]}
-                  </div>
-          }
-      })}
-
+      <input
+        disabled={!props.isEditable} 
+        type={!props.isEditable && props.dataText === "time" ? "text" : "number"}
+        className={isFilled ? styles.cell : styles.unfilled}
+        onInput={e=>isInputEmpty(e,props.dataText)}
+        data-text={props.dataText}
+        suppressContentEditableWarning={true}
+        value={!props.isEditable && props.dataText === "time" ? convertToMS(inputValue) : inputValue}
+      />
     </div>
   )
 }

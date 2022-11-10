@@ -3,13 +3,14 @@ import styles from './styles.module.scss';
 import Cell from "./BlindCell";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import uuid4 from "uuid4";
+import { act } from "react-dom/test-utils";
 
 
 function BlindComponent(props) {
     const [game,setGame] = useState({});
     const [isEditable,setEditable] = useState(false);
     const [blinds, setBlinds] = useState([]);
-    const [isBlindsDataFilled, setBlindsDataFilled] = useState(true);
+    const [unFilledList, setUnFilledList] = useState([]);
 
     useEffect(()=>{
         setGame(props.game);
@@ -26,9 +27,6 @@ function BlindComponent(props) {
         setEditable(isEditable=>!isEditable);
     }
 
-    function handleIsblindsFilled(bool){
-        setBlindsDataFilled(bool);
-    }
     function handleInput(id,key,value){
         let arr = blinds;
         arr.find(el=>{
@@ -36,7 +34,7 @@ function BlindComponent(props) {
                 el[key] = Number(value);
             }
         });
-        console.log(arr);
+        console.log('updated cells input',arr);
         setBlinds(arr);
     }
 
@@ -85,9 +83,29 @@ function BlindComponent(props) {
         // console.log(items);
         setBlinds(items);
     }
-  
+    function handleUnfilledList(action,id,key){
+        // console.log("handle unfilled",action,id,key)
+        if(action == "add"){
+            setUnFilledList(arr=>[...arr,{id:id,key:key}]);
+        }else if(action = "del"){
+            unFilledList.map((el,index)=>{
+                if(el.id == id && el.key == key){
+                    let updatedUnfilledList = Array.from(unFilledList);
+                    updatedUnfilledList.splice(index,1);
+                    setUnFilledList(updatedUnfilledList);
+                }
+            })
+        }
+    }
     return(
         <div className={isEditable ? [styles.table,styles.editableTable].join(' ') : styles.table}>
+            <div className={styles.editRowsTitle}>
+                <div className={styles.column}>Small Blind</div>
+                <div className={styles.column}>Big Blind</div>
+                <div className={styles.column}>Time</div>
+                {isEditable ? <div className={styles.editButtons}>Edit Buttons</div> : null}
+            </div>
+            
             <DragDropContext onDragEnd={handleOnDragEnd}>
                 <Droppable droppableId="list-container" >
                     {(provided) => (
@@ -99,7 +117,10 @@ function BlindComponent(props) {
                                         key={el._id} 
                                         ref={provided.innerRef} {...provided.dragHandleProps} {...provided.draggableProps}
                                     >
-                                        <Cell data={el} isEditable={isEditable} handleInput={handleInput}/>
+                                        <Cell data={el.smallBlind} _id={el._id} dataText="smallBlind" isEditable={isEditable} handleInput={handleInput} updateUnfilled={handleUnfilledList}/>
+                                        <Cell data={el.bigBlind} _id={el._id} dataText="bigBlind"  isEditable={isEditable} handleInput={handleInput} updateUnfilled={handleUnfilledList}/>
+                                        <Cell data={el.time} _id={el._id} dataText="time"  isEditable={isEditable} handleInput={handleInput} updateUnfilled={handleUnfilledList}/>
+                                        
                                         {isEditable ? 
                                         <div className={styles.editRowsButtons}>
                                             <div className={styles.add} onClick={e=>handleAddRow(index)}>+</div>
@@ -120,8 +141,8 @@ function BlindComponent(props) {
             <div className={styles.editButtons}>
                 {isEditable ?
                     <div>
-                        <div onClick={e=>saveBlindsUpdate()}>Save changes</div>
-                        <div onClick={e=>discardBlindsUpdate()}>Discard changes</div>
+                        <button disabled={unFilledList.length ? true : false} onClick={e=>saveBlindsUpdate()}>Save changes</button>
+                        <button onClick={e=>discardBlindsUpdate()}>Discard changes</button>
                     </div> : null
                 }
                 <img src={process.env.PUBLIC_URL+"/images/edit.png"} alt="edit" className={styles.edit} onClick={e=>handleEditEditable()}/>
