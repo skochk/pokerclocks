@@ -1,0 +1,28 @@
+.content{
+    width: 100%;
+    height: calc(100vh - 80px);
+    background-color: hsl(201, 42%, 25%);
+    color: #ffff;
+    .container{
+        width: 1200px;
+        height: 100%;
+        margin: 0 auto;
+        border: 1px solid red;
+        box-sizing: border-box;
+    }
+    .chooseMenu{
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        .card{
+            height: 100px;
+            width: 50%;
+            border: 1px solid red;
+            text-transform: uppercase;
+            .alertMessage{
+                color: red;
+            }
+        }
+    }
+}

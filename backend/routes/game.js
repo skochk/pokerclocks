@@ -1,5 +1,7 @@
 var express = require('express');
 var router = express.Router();
+let gameController = require('../controllers/gameApi');
+
 router.post('/', function(req, res, next) {
   // console.log("params:",req.params.id)
   // var io = req.app.get('socketio');;
@@ -14,5 +16,6 @@ router.post('/', function(req, res, next) {
   //   // io.join(req.param.id)
   // }catch{(err)=>console.log(err)}
 });
+
 
 module.exports = router;

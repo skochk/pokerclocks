@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './styles.module.scss'
 
 function BigBlindsComponent(props) {
-    if(Object.keys(props.game).length) console.log(props.game.currentLevel,props.game.levelStructure[props.game.currentLevel-1].smallBlind,props.game.levelStructure[props.game.currentLevel-1].bigBlind)
+    // if(Object.keys(props.game).length) console.log(props.game.currentLevel,props.game.levelStructure[props.game.currentLevel-1].smallBlind,props.game.levelStructure[props.game.currentLevel-1].bigBlind)
     return (
     <div className={styles.contentArea}>
             {Object.keys(props.game).length ? 

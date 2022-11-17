@@ -3,8 +3,8 @@ import styles from './styles.module.scss'
 
 
 function MainClocks(props) {
-    const [progress,setProgress] = useState();
-    const [totalLength, setTotalLength] = useState(null);
+    // const [progress,setProgress] = useState();
+    // const [totalLength, setTotalLength] = useState(null);
     
    
     useEffect(()=>{ 
@@ -25,29 +25,29 @@ function MainClocks(props) {
                 }
             }
             
-            setProgress(calcTotalLeft(props.game));
-            setTotalLength(calcGameLength(props.game)); //it must be calculated once instead updating every sec but i dont care how to realize it
+            // setProgress(calcTotalLeft(props.game));
+            // setTotalLength(calcGameLength(props.game)); //it must be calculated once instead updating every sec but i dont care how to realize it
         }, 1000);
         return () => clearInterval(intervalID); //prevent wrong callback from setInterval
       },[props.game]);  
     
-    function calcTotalLeft(game){
-        let totalSec = game.currentTime;
-        // console.log('calcTotalLeft:',game);
-        for(let i = game.currentLevel; i<=game.levelStructure.length-1; i++){
-            totalSec += game.levelStructure[i].time;    
-        }
+    // function calcTotalLeft(game){
+    //     let totalSec = game.currentTime;
+    //     // console.log('calcTotalLeft:',game);
+    //     for(let i = game.currentLevel; i<=game.levelStructure.length-1; i++){
+    //         totalSec += game.levelStructure[i].time;    
+    //     }
     
-        return totalSec;
-    }
-    function calcGameLength(game){
-        let gameLenth = 0;
-        for(let i = 0;i<game.levelStructure.length;i++){
-            gameLenth +=game.levelStructure[i].time;
-        }
-        return gameLenth;
-    }
-    function convertToMS(seconds){
+    //     return totalSec;
+    // }
+    // function calcGameLength(game){
+    //     let gameLenth = 0;
+    //     for(let i = 0;i<game.levelStructure.length;i++){
+    //         gameLenth +=game.levelStructure[i].time;
+    //     }
+    //     return gameLenth;
+    // }
+    function convertSecToMin(seconds){
         return (seconds - seconds % 60)/60 + ":" + seconds % 60;
     }
     function updatePauseState(){
@@ -61,21 +61,21 @@ function MainClocks(props) {
     function changeLvlState(direction){
         let current = props.game.currentLevel+direction-1;
         if(props.game.levelStructure[current]){
-            props.updateState({...props.game,currentLevel: current+1, currentTime: props.game.levelStructure[current].time});
-            props.emitState({...props.game,currentLevel: current+1, currentTime: props.game.levelStructure[current].time});
+            props.updateState({...props.game,currentLevel: current+1, currentTime: props.game.levelStructure[current].time * 60});
+            props.emitState({...props.game,currentLevel: current+1, currentTime: props.game.levelStructure[current].time * 60});
         }
     }
 
     return (
         <div className={styles.mainClocks}>
             <div className={styles.mainTime}>
-                {convertToMS(props.game.currentTime)}
+                {convertSecToMin(props.game.currentTime)}
             </div>
             <div className={styles.progressBar}>
                 <div className={styles.backLine}></div>
                 <div style=
                     {{width: 
-                    progress >= 5 ? progress*100/totalLength +"%" : "5px"
+                    props.game.currentTime >= 5 ? props.game.currentTime*1.67/props.game.levelStructure[props.game.currentLevel-1].time +"%" : "5px"
                     }} className={styles.progressLine}
                 >
                 </div>

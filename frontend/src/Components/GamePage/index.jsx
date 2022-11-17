@@ -4,19 +4,20 @@ import io from 'socket.io-client';
 import MainTimer from './mainTimer';
 import Blinds from './BlindsPage';
 import BigBlinds from './BigBlinds';
+import ErrorPage from './ErrorPage';
 import axios from "axios";
-
+import { useParams } from "react-router-dom";
 
 const ENDPOINT = "http://localhost:8080";
-// const socket = io(ENDPOINT);
+let tempApiEndpoint = "http://localhost:8080/gameApi";
 
 function GameComponent() {
-  const [isSocketConn, setIsSocketConn] = useState(false);
-  const [lastPong, setLastPong] = useState(null);
   const [game,setGame] = useState({});
   const [currentTime, setCurrrentTime] = useState(new Date().getHours() + ':' + new Date().getMinutes());
   const socketRef = useRef(null);
   const gameRef = useRef({});
+  const [totalTimePlayed, setTotalTimePlayed] = useState("0:00");
+  const [isConnectedToRoom, setConnectedToRoom] = useState(false);
 
 
   useEffect(()=>{
@@ -24,9 +25,41 @@ function GameComponent() {
       setCurrrentTime(new Date().getHours() + ':' + new Date().getMinutes()); 
     }, 60000)
 
-  },[currentTime])  
+  },[currentTime]);
 
-  let tempCode = 'JEIYG';
+  let toHHMMSS = (secs) => {
+    let hours  = Math.floor(secs / 3600) ? Math.floor(secs / 3600) + ":" : "";
+    let minutes =  Math.floor(secs / 60) && secs > 3599 % 60 ? Math.floor(secs / 60) % 60 == 0 ? "00" : secs /60 % 60 < 10 && secs > 3599 ? "0"+Math.floor(secs /60) % 60+":" : Math.floor(secs / 60) % 60+":" : "";
+    
+    let seconds;
+    if(secs > 59){
+      seconds = secs % 60;
+      if(secs % 60 == 0){
+        seconds = "00";
+      }
+      if(secs % 60 < 10){
+        seconds = "0"+ secs % 60;
+      }
+    }else if(secs % 60 < 10){
+      seconds = "0:0" + secs % 60;
+    }
+    else{
+      seconds = "0:" + secs % 60;
+    }
+    return hours+minutes+seconds;
+  }
+
+  useEffect(()=>{
+    //might be writed better while only once calculated total time and then just add +1 sec to timer but I wrote Timeouts in different components:()
+    if(game.levelStructure){
+      let totalSecs = 0;
+      for(let i = 0; i<game.currentLevel-1;i++){
+        totalSecs += game.levelStructure[i].time*60;
+      }
+      totalSecs = totalSecs + game.levelStructure[game.currentLevel-1].time*60 - game.currentTime;
+      setTotalTimePlayed(toHHMMSS(totalSecs));
+    }
+  },[game]);
 
   function handleGameChange(newValues){
     setGame(newValues);
@@ -38,16 +71,34 @@ function GameComponent() {
     socketRef.current.emit('room-msg',{status:'msg',payload:values});
   }
   
+  let {gameCode} = useParams(); 
   useEffect(()=>{
     socketRef.current = io(ENDPOINT);
     socketRef.current.on('connect', () => {
       console.log('connected to socket');
-      setIsSocketConn(true);
+      // setIsSocketConn(true);
     });
-    socketRef.current.emit('joinroom',tempCode,socketRef.current.id);
+    console.log('ss',gameCode.toUpperCase());
+    axios.post(tempApiEndpoint+"/load",{code:gameCode},{
+      headers: {
+          'Content-Type': 'application/json'
+      }
+    })
+    .then(data=>{
+        console.log("axios:",data.data);
+        if(!data.data.errorMessage){
+            console.log('connecting')
+            socketRef.current.emit('joinroom',gameCode.toUpperCase(),socketRef.current.id)
+            setConnectedToRoom(true);
+        }else{
+          setConnectedToRoom(false);
+          console.log('room not found')
+        }
+    })
+ 
 
     socketRef.current.on('disconnect', () => {
-        setIsSocketConn(false);
+        // setIsSocketConn(false);
     });
 
     socketRef.current.on('room-msg', function(msg){
@@ -62,9 +113,7 @@ function GameComponent() {
         console.log('error fetching data from socket');
       }
     });
-    // const emitInterval = setInterval(() => {
-    //   emitGameChanges(gameRef.current);
-    // }, 10000);
+   
 
     return () => {
       // clearInterval(emitInterval);
@@ -77,7 +126,8 @@ function GameComponent() {
 
   return (
     <div className={styles.content}>
-        {/* <div className={styles.temp}>is socket: {isSocketConn},game:{JSON.stringify(game)}</div> */}
+    {!isConnectedToRoom ? <ErrorPage/> :
+      <>
         <div className={styles.element}>
           <Blinds game={game} updateState={handleGameChange} emitState={emitGameChanges}/>
         </div>
@@ -86,7 +136,7 @@ function GameComponent() {
           <div className={styles.times}>
             <div className={styles.timer}>
               <img src={process.env.PUBLIC_URL + "/images/timer.png"} alt="timer" />
-              <p>0:55</p> 
+              <p>{totalTimePlayed}</p> 
             </div>
             <div className={styles.clocks}>
               <img src={process.env.PUBLIC_URL + "/images/clocks.png"} alt="clocks" />
@@ -100,6 +150,8 @@ function GameComponent() {
         <div className={styles.element}>
           <BigBlinds game={game}/>
         </div>
+      </>
+    }
     </div>
   )
 }

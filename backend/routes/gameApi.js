@@ -15,11 +15,20 @@ router.post('/createGame', function(req, res) {
     })()
 });
 
+
+router.post('/load', function(req,res){
+    console.log(req.body);
+    (async()=>{
+      let result = await gameController.getGame(req.body.code.toUpperCase());
+      res.send(result || {errorMessage:"Game not exist"});
+    })();
+});
+
 router.post('/test', function(req,res){
     (async function(){
         console.log(req.body);
         let result = await gameController.updateGameInfo(req.body);
-        res.send(result)
+        // res.send(result || {errorMessage:"Game not exist"});
     })()
         
 });

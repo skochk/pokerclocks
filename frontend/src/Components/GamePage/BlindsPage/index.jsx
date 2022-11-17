@@ -46,14 +46,19 @@ function BlindComponent(props) {
         setBlinds(arr);
     }
     
-    function handleRemoveRow(index){
+    function handleRemoveRow(index,id){
+        // if cells unfilled and later removed need to delete this cells from unfilled list
+        if(id){
+            handleUnfilledList('del',id,"time");
+            handleUnfilledList('del',id,"smallBlind");
+            handleUnfilledList('del',id,"bigBlind");
+        }
         let arr = Array.from(blinds); //create exactly new array to trigger blinds rerender
         arr.splice(index,1);
         setBlinds(arr);
     }
 
     function saveBlindsUpdate(){
-
         //if current level more than blinds levels total
         let updatedGameState = {...game,levelStructure: blinds};
         if(updatedGameState.currentLevel > updatedGameState.levelStructure.length){
@@ -71,6 +76,7 @@ function BlindComponent(props) {
         let temp = game;
         await setGame({});
         await setGame(temp);
+        await setBlinds(temp.levelStructure);
         // strange way to rerender all childs 
     }
 
@@ -97,47 +103,71 @@ function BlindComponent(props) {
             })
         }
     }
+
     return(
         <div className={isEditable ? [styles.table,styles.editableTable].join(' ') : styles.table}>
+         
+            {isEditable ? 
+            <>
             <div className={styles.editRowsTitle}>
+                <div className={styles.column}>Level</div>
+                <div className={styles.column}>Time</div>
                 <div className={styles.column}>Small Blind</div>
                 <div className={styles.column}>Big Blind</div>
-                <div className={styles.column}>Time</div>
-                {isEditable ? <div className={styles.editButtons}>Edit Buttons</div> : null}
-            </div>
-            
+            </div>   
             <DragDropContext onDragEnd={handleOnDragEnd}>
                 <Droppable droppableId="list-container" >
                     {(provided) => (
                         <div className="list-container" {...provided.droppableProps} ref={provided.innerRef}>
                         {blinds ? blinds.map((el,index)=>(
-                            <Draggable key={el._id} draggableId={el._id} index={index} isDragDisabled={!isEditable}>
+                        <div className={styles.numberedRow}>
+                            <div className={styles.rowNumber}>{index+1}</div>
+                            <Draggable key={el._id} draggableId={el._id} index={index}>
                                 {(provided) => (
-                                    <div className={index+1 == game.currentLevel && !isEditable ? [styles.row,styles.active].join(' ') : styles.row} 
+                                    <div className={styles.row} 
                                         key={el._id} 
                                         ref={provided.innerRef} {...provided.dragHandleProps} {...provided.draggableProps}
                                     >
-                                        <Cell data={el.smallBlind} _id={el._id} dataText="smallBlind" isEditable={isEditable} handleInput={handleInput} updateUnfilled={handleUnfilledList}/>
-                                        <Cell data={el.bigBlind} _id={el._id} dataText="bigBlind"  isEditable={isEditable} handleInput={handleInput} updateUnfilled={handleUnfilledList}/>
-                                        <Cell data={el.time} _id={el._id} dataText="time"  isEditable={isEditable} handleInput={handleInput} updateUnfilled={handleUnfilledList}/>
-                                        
-                                        {isEditable ? 
+                                        <Cell data={el.time} _id={el._id} dataText="time" handleInput={handleInput} updateUnfilled={handleUnfilledList}/>
+                                        <Cell data={el.smallBlind} _id={el._id} dataText="smallBlind" handleInput={handleInput} updateUnfilled={handleUnfilledList}/>
+                                        <Cell data={el.bigBlind} _id={el._id} dataText="bigBlind" handleInput={handleInput} updateUnfilled={handleUnfilledList}/>
                                         <div className={styles.editRowsButtons}>
                                             <div className={styles.add} onClick={e=>handleAddRow(index)}>+</div>
-                                            <div className={styles.remove} onClick={e=>handleRemoveRow(index)}>+</div>
+                                            <div className={styles.remove} onClick={e=>handleRemoveRow(index,el._id)}>+</div>
                                             <img src={process.env.PUBLIC_URL + "/images/threedots.png"} alt="timer" />
                                         </div>
-                                        : null}
                                     </div>
                                 
                                 )}
                             </Draggable>
+                            </div>
                         )) : null}
                     {provided.placeholder}
                     </div>
                     )}
                 </Droppable>
             </DragDropContext>
+            </>
+            :
+            <div>
+                <div className={styles.editRowsTitle}>
+                    <div className={styles.column}>Level</div>
+                    <div className={styles.column}>Time</div>
+                    <div className={styles.column}>Blinds</div>
+                </div>
+                <div className={styles.blindsTableViewMode}>
+                    {blinds && blinds.map((el,index)=>(
+                        <div className={index+1 == game.currentLevel ? [styles.viewTableRow, styles.activeRow].join(" ") : styles.viewTableRow} key={el._id}>
+                            <div className={styles.element}>{index+1}</div>
+                            <div className={styles.element}>{el.time}'</div>
+                            <div className={styles.element}>{el.smallBlind}/{el.bigBlind}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>         
+            }                     
+
+
             <div className={styles.editButtons}>
                 {isEditable ?
                     <div>

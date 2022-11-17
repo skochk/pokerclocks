@@ -2,14 +2,16 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    .numberedRow{
+        display: flex;
+        .rowNumber{
+            width: 50px;
+        }
+    }
     .row{
         display: flex;
         width: 100%;
         justify-content: space-around;
-    }
-    .active input{
-        color:#f35e13;
-        font-size: 1.1em;
     }
     .editButtons{
         display: flex;
@@ -73,4 +75,33 @@
 [contentEditable=true]:empty:not(:focus):before {
     content: attr(data-text);
     color: #c1c1c1;
+}
+
+
+.blindsTableViewMode{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    .viewTableRow{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        .element{
+            width: 100%;
+            border: 1px solid #1b3646;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-content: space-between;
+            height: 23px;
+            background-color: #305970;
+            color: white;
+            text-align: center;
+        }
+    }
+    .activeRow .element{
+        color:#f35e13;
+        font-size: 1.05em;   
+    }
 }
